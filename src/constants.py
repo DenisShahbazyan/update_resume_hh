@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -23,3 +24,5 @@ DT_FORMAT = '%d.%m.%Y %H:%M:%S'
 
 COOKIES_DIR = BASE_DIR / 'cookies'
 COOKIES_FILE = COOKIES_DIR / f'{LOGIN}_cookies'
+
+TIME_NOW = datetime.now().strftime(DT_FORMAT)

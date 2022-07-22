@@ -1,7 +1,7 @@
 import pickle
-from datetime import datetime
 from os import path
 from time import sleep
+from typing import Any
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -13,8 +13,8 @@ from tqdm import tqdm
 from webdriver_manager.chrome import ChromeDriverManager
 
 from configs import configure_logging
-from constants import (COOKIES_DIR, COOKIES_FILE, DT_FORMAT, INTERVAL, LOGIN,
-                       PASSWORD, STEP_INTERVAL, URL, URL_LOGIN, URL_RESUME)
+from constants import (COOKIES_DIR, COOKIES_FILE, INTERVAL, LOGIN, PASSWORD,
+                       STEP_INTERVAL, TIME_NOW, URL, URL_LOGIN, URL_RESUME)
 from elements import (account_login_error, bloko_modal, login_by_password,
                       login_input_password, login_input_username, login_submit,
                       mainmenu_my_resumes, resume_update_button)
@@ -23,7 +23,7 @@ from exceptions import LoginOrPasswordErrorException
 logger = configure_logging()
 
 
-def _wait(driver, locator, selector):
+def _wait(driver: WebDriver, locator: Any, selector: str):
     """Функция ожидания необходимого контрола.
     """
     max_wait = 10
@@ -46,10 +46,10 @@ def update_resume(d: WebDriver):
         button_update.click()
         _wait(d, By.XPATH, bloko_modal)
         logger.info(str_ := 'Поднял резюме.')
-        print(str_)
+        print(f'{TIME_NOW}', str_)
     else:
         logger.info(str_ := 'Время еще не пришло...')
-        print(str_)
+        print(f'{TIME_NOW}', str_)
 
 
 def get_cookies(d: WebDriver):
@@ -91,12 +91,13 @@ def set_options():
     """Установка опций для драйвера.
     """
     options = webdriver.ChromeOptions()
-    options.add_argument('headless')
+    # options.add_argument('headless')
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--ignore-ssl-errors')
     options.add_argument('--disable-infobars')
     options.add_argument('--ignore-certificate-errors-spki-list')
     options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
     return options
 
 
@@ -111,10 +112,10 @@ def main():
         driver = get_cookies(driver)
         update_resume(driver)
     except LoginOrPasswordErrorException as error:
-        print('Неправильные данные для входа.')
+        print(f'{TIME_NOW} Неправильные данные для входа.')
         logger.exception(error, exc_info=True)
     except Exception as error:
-        print('Непредвиденная ошибка.')
+        print(f'{TIME_NOW} Непредвиденная ошибка.')
         logger.exception(error, exc_info=True)
     finally:
         driver.quit()
@@ -123,10 +124,9 @@ def main():
 
 if __name__ == '__main__':
     while True:
-        print('Старт работы.')
+        print(f'{TIME_NOW} Старт работы.')
         main()
-        time_now = datetime.now().strftime(DT_FORMAT)
         for i in tqdm(
                 range(INTERVAL),
-                desc=f'{time_now} До следующей проверки:'):
+                desc=f'{TIME_NOW} До следующей проверки:'):
             sleep(STEP_INTERVAL)

@@ -1,4 +1,3 @@
 class LoginOrPasswordErrorException(Exception):
-    """Вызывается, если неверный логин или пароль.
-    """
+    """Вызывается, если неверный логин или пароль."""
     pass

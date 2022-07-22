@@ -1,0 +1,8 @@
+login_by_password = '//button[@data-qa="expand-login-by-password"]'
+login_input_username = '//input[@data-qa="login-input-username"]'
+login_input_password = '//input[@data-qa="login-input-password"]'
+login_submit = '//button[@data-qa="account-login-submit"]'
+mainmenu_my_resumes = '//a[@data-qa="mainmenu_myResumes"]'
+resume_update_button = '//button[@data-qa="resume-update-button"]'
+bloko_modal = '//div[@data-qa="bloko-modal"]'
+account_login_error = '//div[@data-qa="account-login-error"]'

@@ -24,6 +24,12 @@ from exceptions import LoginOrPasswordErrorException
 logger = configure_logging()
 
 
+def get_time():
+    """Возвращает текущее время.
+    """
+    return datetime.now().strftime(DT_FORMAT)
+
+
 def _wait(driver: WebDriver, locator: Any, selector: str):
     """Функция ожидания необходимого контрола.
     """
@@ -47,10 +53,10 @@ def update_resume(d: WebDriver):
         button_update.click()
         _wait(d, By.XPATH, bloko_modal)
         logger.info(str_ := 'Поднял резюме.')
-        print(f'{datetime.now().strftime(DT_FORMAT)}', str_)
+        print(get_time(), str_)
     else:
         logger.info(str_ := 'Время еще не пришло...')
-        print(f'{datetime.now().strftime(DT_FORMAT)}', str_)
+        print(get_time(), str_)
 
 
 def get_cookies(d: WebDriver):
@@ -97,7 +103,7 @@ def set_options():
     options.add_argument('--ignore-ssl-errors')
     options.add_argument('--disable-infobars')
     options.add_argument('--ignore-certificate-errors-spki-list')
-    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     return options
 
@@ -113,16 +119,10 @@ def main():
         driver = get_cookies(driver)
         update_resume(driver)
     except LoginOrPasswordErrorException as error:
-        print(
-            f'{datetime.now().strftime(DT_FORMAT)} '
-            'Неправильные данные для входа.'
-        )
+        print(get_time(), 'Неправильные данные для входа.')
         logger.exception(error, exc_info=True)
     except Exception as error:
-        print(
-            f'{datetime.now().strftime(DT_FORMAT)} '
-            'Непредвиденная ошибка.'
-        )
+        print(get_time(), 'Непредвиденная ошибка.')
         logger.exception(error, exc_info=True)
     finally:
         driver.quit()
@@ -131,13 +131,10 @@ def main():
 
 if __name__ == '__main__':
     while True:
-        print(f'{datetime.now().strftime(DT_FORMAT)} Старт работы.')
+        print(get_time(), 'Старт работы.')
         main()
         for i in tqdm(
             range(INTERVAL),
-            desc=(
-                f'{datetime.now().strftime(DT_FORMAT)} '
-                'До следующей проверки:'
-            )
+            desc=(f'{get_time()} До следующей проверки:')
         ):
             sleep(STEP_INTERVAL)

@@ -55,7 +55,10 @@ def update_resume(d: WebDriver):
             logger.info(str_ := f'Поднял резюме под номером {i}.')
             print(get_time(), str_)
         else:
-            logger.info(str_ := f'Время для поднятия резюме под номеро {i} еще не пришло...')
+            logger.info(
+                str_ := f'Время для поднятия резюме под номеро {i} '
+                'еще не пришло...'
+            )
             print(get_time(), str_)
 
 

@@ -2,13 +2,14 @@ import pickle
 from datetime import datetime
 from os import path
 from time import sleep
-from typing import Any
 
 from colorama import Fore, init
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from tqdm import tqdm
@@ -27,13 +28,15 @@ logger = configure_logging()
 init(autoreset=True)
 
 
-def get_time():
+def get_time() -> str:
     """Возвращает текущее время.
     """
     return datetime.now().strftime(DT_FORMAT)
 
 
-def _wait(driver: WebDriver, locator: Any, selector: str):
+def _wait(
+    driver: WebDriver, locator: str, selector: str
+) -> list[WebElement] | None:
     """Функция ожидания необходимого контрола.
     """
     max_wait = 10
@@ -42,10 +45,10 @@ def _wait(driver: WebDriver, locator: Any, selector: str):
             EC.presence_of_all_elements_located((locator, selector))
         )
     except:
-        return 0
+        return None
 
 
-def update_resume(d: WebDriver):
+def update_resume(d: WebDriver) -> None:
     """Поднятие резюме.
     """
     d.get(URL + URL_RESUME)
@@ -62,10 +65,10 @@ def update_resume(d: WebDriver):
                 str_ := f'Время для поднятия резюме под номером {i} '
                 'еще не пришло...'
             )
-            print(Fore.RED + f'{get_time()} {str_}')
+            print(Fore.BLUE + f'{get_time()} {str_}')
 
 
-def get_cookies(d: WebDriver):
+def get_cookies(d: WebDriver) -> WebDriver:
     """Сохранение или получение cookies.
     """
     COOKIES_DIR.mkdir(exist_ok=True)
@@ -100,7 +103,7 @@ def get_cookies(d: WebDriver):
     return d
 
 
-def set_options():
+def set_options() -> Options:
     """Установка опций для драйвера.
     """
     options = webdriver.ChromeOptions()
@@ -115,7 +118,7 @@ def set_options():
     return options
 
 
-def main():
+def main() -> None:
     """Точка входа в программу. Создание драйвера, применение опций.
     """
     service = Service(executable_path=ChromeDriverManager().install())
@@ -126,11 +129,13 @@ def main():
         driver = get_cookies(driver)
         update_resume(driver)
     except LoginOrPasswordErrorException as error:
-        print(get_time(), 'Неправильные данные для входа.')
+        print(Fore.RED + f'{get_time()} Неправильные данные для входа.')
         logger.exception(error, exc_info=True)
+        exit()
     except Exception as error:
-        print(get_time(), 'Непредвиденная ошибка.')
+        print(Fore.RED + f'{get_time()} Непредвиденная ошибка.')
         logger.exception(error, exc_info=True)
+        exit()
     finally:
         driver.quit()
         logger.info('Драйвер остановлен!')

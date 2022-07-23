@@ -56,7 +56,7 @@ def update_resume(d: WebDriver):
             print(get_time(), str_)
         else:
             logger.info(
-                str_ := f'Время для поднятия резюме под номеро {i} '
+                str_ := f'Время для поднятия резюме под номером {i} '
                 'еще не пришло...'
             )
             print(get_time(), str_)
@@ -101,7 +101,7 @@ def set_options():
     """Установка опций для драйвера.
     """
     options = webdriver.ChromeOptions()
-    options.add_argument('headless')
+    options.add_argument('--headless')
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--ignore-ssl-errors')
     options.add_argument('--disable-infobars')

@@ -4,6 +4,7 @@ from os import path
 from time import sleep
 from typing import Any
 
+from colorama import Fore, init
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -22,6 +23,8 @@ from elements import (account_login_error, bloko_modal, login_by_password,
 from exceptions import LoginOrPasswordErrorException
 
 logger = configure_logging()
+
+init(autoreset=True)
 
 
 def get_time():
@@ -53,13 +56,13 @@ def update_resume(d: WebDriver):
             button_update.click()
             _wait(d, By.XPATH, bloko_modal)
             logger.info(str_ := f'Поднял резюме под номером {i}.')
-            print(get_time(), str_)
+            print(Fore.GREEN + f'{get_time()} {str_}')
         else:
             logger.info(
                 str_ := f'Время для поднятия резюме под номером {i} '
                 'еще не пришло...'
             )
-            print(get_time(), str_)
+            print(Fore.RED + f'{get_time()} {str_}')
 
 
 def get_cookies(d: WebDriver):
@@ -102,12 +105,13 @@ def set_options():
     """
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument('--ignore-ssl-errors')
-    options.add_argument('--disable-infobars')
     options.add_argument('--ignore-certificate-errors-spki-list')
     options.add_argument('--disable-blink-features=AutomationControlled')
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    options.add_argument('--log-level=3')
+    options.add_experimental_option(
+        'excludeSwitches', ['enable-logging', 'enable-automation']
+    )
+    options.add_experimental_option('useAutomationExtension', False)
     return options
 
 

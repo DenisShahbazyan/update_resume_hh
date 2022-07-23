@@ -47,16 +47,16 @@ def update_resume(d: WebDriver):
     """
     d.get(URL + URL_RESUME)
     _wait(d, By.XPATH, resume_update_button)
-
-    button_update = d.find_element(By.XPATH, resume_update_button)
-    if button_update.text == 'Поднять в поиске':
-        button_update.click()
-        _wait(d, By.XPATH, bloko_modal)
-        logger.info(str_ := 'Поднял резюме.')
-        print(get_time(), str_)
-    else:
-        logger.info(str_ := 'Время еще не пришло...')
-        print(get_time(), str_)
+    buttons_update = d.find_elements(By.XPATH, resume_update_button)
+    for i, button_update in enumerate(buttons_update, start=1):
+        if button_update.text == 'Поднять в поиске':
+            button_update.click()
+            _wait(d, By.XPATH, bloko_modal)
+            logger.info(str_ := f'Поднял резюме под номером {i}.')
+            print(get_time(), str_)
+        else:
+            logger.info(str_ := f'Время для поднятия резюме под номеро {i} еще не пришло...')
+            print(get_time(), str_)
 
 
 def get_cookies(d: WebDriver):

@@ -55,17 +55,15 @@ def update_resume(d: WebDriver) -> None:
     _wait(d, By.XPATH, resume_update_button)
     buttons_update = d.find_elements(By.XPATH, resume_update_button)
     for i, button_update in enumerate(buttons_update, start=1):
-        if button_update.text == 'Поднять в поиске':
-            button_update.click()
-            _wait(d, By.XPATH, bloko_modal)
-            logger.info(str_ := f'Поднял резюме под номером {i}.')
-            print(Fore.GREEN + f'{get_time()} {str_}')
-        else:
-            logger.info(
-                str_ := f'Время для поднятия резюме под номером {i} '
-                'еще не пришло...'
-            )
-            print(Fore.BLUE + f'{get_time()} {str_}')
+        button_update.click()
+        _wait(d, By.XPATH, bloko_modal)
+        logger.info(str_ := f'Поднял резюме под номером {i}.')
+        print(Fore.GREEN + f'{get_time()} {str_}')
+    else:
+        logger.info(
+            str_ := f'Время для поднятия резюме еще не пришло...'
+        )
+        print(Fore.BLUE + f'{get_time()} {str_}')
 
 
 def get_cookies(d: WebDriver) -> WebDriver:

@@ -1,5 +1,4 @@
 import pickle
-import shutil
 from datetime import datetime
 from os import path
 from time import sleep
@@ -13,13 +12,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import WebDriverException, TimeoutException
 from tqdm import tqdm
 from webdriver_manager.chrome import ChromeDriverManager
 
 from configs import configure_logging
 from constants import (COOKIES_DIR, COOKIES_FILE, DT_FORMAT, INTERVAL,
-                       LIFE_TIME, LOGIN, PASSWORD, STEP_INTERVAL, URL,
-                       URL_LOGIN, URL_RESUME)
+                       LOGIN, PASSWORD, STEP_INTERVAL, URL, URL_LOGIN,
+                       URL_RESUME, COUNT_OF_WAIT_ATTEMPTS)
 from elements import (account_login_error, bloko_modal, login_by_password,
                       login_input_password, login_input_username, login_submit,
                       mainmenu_my_resumes, resume_update_button)
@@ -42,12 +42,28 @@ def _wait(
 ) -> list[WebElement] | None:
     """Функция ожидания необходимого контрола."""
     max_wait = 10
+
+    for _ in range(COUNT_OF_WAIT_ATTEMPTS):
+        try:
+            return WebDriverWait(driver, max_wait).until(
+                EC.presence_of_all_elements_located((locator, selector))
+            )
+        except:
+            driver.refresh()
+
+
+def _is_not_element_present(
+    driver: WebDriver, locator: str, selector: str
+) -> list[WebElement] | None:
+    max_wait = 4
+
     try:
-        return WebDriverWait(driver, max_wait).until(
-            EC.presence_of_all_elements_located((locator, selector))
-        )
-    except:
-        return None
+        WebDriverWait(driver, max_wait).until(
+            EC.presence_of_element_located((locator, selector)))
+    except TimeoutException:
+        return True
+
+    return False
 
 
 def update_resume(d: WebDriver) -> None:
@@ -91,10 +107,11 @@ def get_cookies(d: WebDriver) -> WebDriver:
     d.find_element(By.XPATH, login_input_username).send_keys(LOGIN)
     d.find_element(By.XPATH, login_input_password).send_keys(PASSWORD)
     d.find_element(By.XPATH, login_submit).click()
-    _wait(d, By.XPATH, mainmenu_my_resumes)
 
-    if _wait(d, By.XPATH, account_login_error):
+    if not _is_not_element_present(d, By.XPATH, account_login_error):
         raise LoginOrPasswordErrorException
+
+    _wait(d, By.XPATH, mainmenu_my_resumes)
 
     with open(COOKIES_FILE, 'wb') as file:
         pickle.dump(d.get_cookies(), file)
@@ -132,6 +149,12 @@ def main() -> None:
         print(Fore.RED + f'{get_time()} Неправильные данные для входа.')
         logger.exception(error, exc_info=True)
         exit()
+    except WebDriverException as error:
+        print(
+            Fore.RED + f'{get_time()} Пытаюсь взаимодействовать с не '
+            'существующим контролом.'
+        )
+        logger.exception(error, exc_info=True)
     except Exception as error:
         print(Fore.RED + f'{get_time()} Непредвиденная ошибка.')
         logger.exception(error, exc_info=True)
@@ -141,23 +164,27 @@ def main() -> None:
         logger.info('Драйвер остановлен!')
 
 
-def check_cookie():
-    """Удаляет куки каждую неделю."""
-    global start_time
-    if start_time is None:
-        start_time = datetime.now()
+# Проверяю действительно ли куки живут целлый год, или отваливаются раньше,
+# если куки будут отваливаться, попробовать запустить код с этой функцией.
 
-    end_time = datetime.now() - start_time
-    if end_time.seconds >= LIFE_TIME:
-        shutil.rmtree(COOKIES_DIR)
-        start_time = None
+# def check_cookie():
+#     """Удаляет куки каждую неделю."""
+#     global start_time
+#     if start_time is None:
+#         start_time = datetime.now()
+
+#     end_time = datetime.now() - start_time
+#     if end_time.seconds >= LIFE_TIME:
+#         shutil.rmtree(COOKIES_DIR)
+#         start_time = None
 
 
 if __name__ == '__main__':
     print(get_time(), 'Старт работы.')
+    # shutil.rmtree(COOKIES_DIR, ignore_errors=True)
     while True:
         main()
-        check_cookie()
+        # check_cookie()
         for i in tqdm(
             range(INTERVAL),
             desc=(f'{get_time()} До следующей проверки:')

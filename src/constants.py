@@ -13,6 +13,7 @@ PASSWORD = os.getenv('PASSWORD')
 
 INTERVAL = 60 * 30
 STEP_INTERVAL = 1
+LIFE_TIME = 60 * 60 * 24 * 7
 
 BASE_DIR = Path(__file__).parent.parent
 LOG_DIR = BASE_DIR / 'logs'

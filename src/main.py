@@ -1,4 +1,5 @@
 import pickle
+import shutil
 from datetime import datetime
 from os import path
 from time import sleep
@@ -16,8 +17,9 @@ from tqdm import tqdm
 from webdriver_manager.chrome import ChromeDriverManager
 
 from configs import configure_logging
-from constants import (COOKIES_DIR, COOKIES_FILE, DT_FORMAT, INTERVAL, LOGIN,
-                       PASSWORD, STEP_INTERVAL, URL, URL_LOGIN, URL_RESUME)
+from constants import (COOKIES_DIR, COOKIES_FILE, DT_FORMAT, INTERVAL,
+                       LIFE_TIME, LOGIN, PASSWORD, STEP_INTERVAL, URL,
+                       URL_LOGIN, URL_RESUME)
 from elements import (account_login_error, bloko_modal, login_by_password,
                       login_input_password, login_input_username, login_submit,
                       mainmenu_my_resumes, resume_update_button)
@@ -27,18 +29,18 @@ logger = configure_logging()
 
 init(autoreset=True)
 
+start_time = None
+
 
 def get_time() -> str:
-    """Возвращает текущее время.
-    """
+    """Возвращает текущее время."""
     return datetime.now().strftime(DT_FORMAT)
 
 
 def _wait(
     driver: WebDriver, locator: str, selector: str
 ) -> list[WebElement] | None:
-    """Функция ожидания необходимого контрола.
-    """
+    """Функция ожидания необходимого контрола."""
     max_wait = 10
     try:
         return WebDriverWait(driver, max_wait).until(
@@ -49,8 +51,7 @@ def _wait(
 
 
 def update_resume(d: WebDriver) -> None:
-    """Поднятие резюме.
-    """
+    """Поднятие резюме."""
     d.get(URL + URL_RESUME)
     _wait(d, By.XPATH, resume_update_button)
     buttons_update = d.find_elements(By.XPATH, resume_update_button)
@@ -69,8 +70,7 @@ def update_resume(d: WebDriver) -> None:
 
 
 def get_cookies(d: WebDriver) -> WebDriver:
-    """Сохранение или получение cookies.
-    """
+    """Сохранение или получение cookies."""
     COOKIES_DIR.mkdir(exist_ok=True)
 
     if path.exists(COOKIES_FILE):
@@ -104,8 +104,7 @@ def get_cookies(d: WebDriver) -> WebDriver:
 
 
 def set_options() -> Options:
-    """Установка опций для драйвера.
-    """
+    """Установка опций для драйвера."""
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
@@ -121,8 +120,7 @@ def set_options() -> Options:
 
 
 def main() -> None:
-    """Точка входа в программу. Создание драйвера, применение опций.
-    """
+    """Точка входа в программу. Создание драйвера, применение опций."""
     service = Service(executable_path=ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=set_options())
     logger.info('-' * 30)
@@ -143,10 +141,23 @@ def main() -> None:
         logger.info('Драйвер остановлен!')
 
 
+def check_cookie():
+    """Удаляет куки каждую неделю."""
+    global start_time
+    if start_time is None:
+        start_time = datetime.now()
+
+    end_time = datetime.now() - start_time
+    if end_time.seconds >= LIFE_TIME:
+        shutil.rmtree(COOKIES_DIR)
+        start_time = None
+
+
 if __name__ == '__main__':
+    print(get_time(), 'Старт работы.')
     while True:
-        print(get_time(), 'Старт работы.')
         main()
+        check_cookie()
         for i in tqdm(
             range(INTERVAL),
             desc=(f'{get_time()} До следующей проверки:')

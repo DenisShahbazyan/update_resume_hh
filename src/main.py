@@ -38,14 +38,13 @@ def get_time() -> str:
 
 
 def _wait(
-    driver: WebDriver, locator: str, selector: str
-) -> list[WebElement] | None:
-    """Функция ожидания необходимого контрола."""
-    max_wait = 10
-
+    driver: WebDriver, locator: str, selector: str, max_wait: int = 10
+) -> None:
+    """Функция ожидания необходимого контрола. Ждем контрол 'max_wait'
+    секунд, потом обновляем страницу, и снова ждем. Так повторяется 3 раза."""
     for _ in range(COUNT_OF_WAIT_ATTEMPTS):
         try:
-            return WebDriverWait(driver, max_wait).until(
+            WebDriverWait(driver, max_wait).until(
                 EC.presence_of_all_elements_located((locator, selector))
             )
         except:
@@ -53,10 +52,10 @@ def _wait(
 
 
 def _is_not_element_present(
-    driver: WebDriver, locator: str, selector: str
-) -> list[WebElement] | None:
-    max_wait = 4
-
+    driver: WebDriver, locator: str, selector: str, max_wait: int = 4
+) -> bool:
+    """Проверяет, есть ли элемент на странице. Если элемента нет - вернет 
+    True, иначе False."""
     try:
         WebDriverWait(driver, max_wait).until(
             EC.presence_of_element_located((locator, selector)))

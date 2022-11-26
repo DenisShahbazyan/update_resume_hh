@@ -5,8 +5,7 @@ from constants import LOG_DIR, LOG_FILE, LOG_FORMAT
 
 
 def configure_logging():
-    """Конфигурация логгера.
-    """
+    """Конфигурация логгера."""
     LOG_DIR.mkdir(exist_ok=True)
 
     logger = logging.getLogger(__name__)
